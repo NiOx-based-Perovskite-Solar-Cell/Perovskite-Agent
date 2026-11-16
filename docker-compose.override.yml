@@ -1,0 +1,10 @@
+# Development: loaded automatically by `docker compose up`. Your src/ is mounted into the container and the server
+# reloads on every save, so code, HTML and JS changes need no rebuild. Rebuild only when pyproject.toml changes.
+# For a production-like run without it:  docker compose -f docker-compose.yml up -d --build
+services:
+  psc:
+    environment:
+      PYTHONPATH: /app/src          # the mounted source wins over the copy installed in the image
+    volumes:
+      - "./src:/app/src:ro"
+    command: ["serve", "--root", "/data", "--host", "0.0.0.0", "--skills", "/data/skills", "--runs", "/runs", "--dev"]
