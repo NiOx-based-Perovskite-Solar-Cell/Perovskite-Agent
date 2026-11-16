@@ -122,7 +122,7 @@ function drawPage(v, rects = [], how = "") {
   const q = v.paper ? `?paper=${encodeURIComponent(v.paper)}` : "";
   const base = `/api/jobs/${encodeURIComponent(JOB)}/source/${v.source}`;
   $("#where").innerHTML = `<span class="where">${v.is_si ? "Supporting information" : "Paper"} · page ${v.page}</span> <span class="mute">${esc(v.file)}</span>
-    · <a href="${base}${q}#page=${v.page}" target="_blank" rel="noopener">open the PDF in a tab ↗</a>`;
+    · <a href="${base}${q}#page=${v.page}" target="_blank" rel="noopener">open the PDF in a tab</a>`;
   const place = () => {
     const w = st.size.width, h = st.size.height;
     rects.forEach(([x0, y0, x1, y1]) => {
@@ -158,7 +158,7 @@ async function show(id, which) {
     ${r.reason ? `<div class="reason"><b>Decision:</b> ${esc(r.reason)}</div>` : ""}
     <div id="pager">${hasAudit && r.page ? `<button id="q-agent" type="button" class="${which === "agent" ? "on" : ""}">agent's quote</button><button id="q-audit" type="button" class="${which === "audit" ? "on" : ""}">auditor's quote (the recorded value)</button>` : ""}
       <button id="prev" type="button">‹ page</button><button id="next" type="button">page ›</button>
-      <span class="mute">← → turn pages · ↑ ↓ change row</span></div>`;
+      <span class="mute">Left/Right keys turn pages · Up/Down change row</span></div>`;
   $("#prev").onclick = () => turn(-1);
   $("#next").onclick = () => turn(1);
   if ($("#q-agent")) { $("#q-agent").onclick = () => show(id, "agent"); $("#q-audit").onclick = () => show(id, "audit"); }

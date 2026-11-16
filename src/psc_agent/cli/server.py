@@ -37,7 +37,7 @@ def cmd_serve(args) -> int:
     if args.host not in ("127.0.0.1", "localhost"):
         print("warning: the service has no login; anyone who can reach this address can start paid model runs")
     if args.dev:
-        app.run(host=args.host, port=args.port, debug=True, use_reloader=False)
+        app.run(host=args.host, port=args.port, debug=True, use_reloader=True)
     else:
         from waitress import serve
 

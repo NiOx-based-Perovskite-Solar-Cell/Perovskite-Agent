@@ -202,8 +202,8 @@ function renderRecheck() {
       <td class="td"><input type="checkbox" data-doi="${esc(p.key)}" ${state.selected.has(p.key) ? "checked" : ""}></td>
       <td class="td font-mono text-xs">${esc(p.key)}</td><td class="td text-xs">${esc(p.pdf)}</td>
       <td class="td tabular-nums">${p.workbooks}</td>
-      <td class="td text-xs">${(p.si_files || []).map((n) => `<div title="${esc(n)}">${esc(n.length > 22 ? n.slice(0, 20) + "…" : n)}
-        <button data-sidelete="${esc(n)}" class="text-rose-600" title="remove this file">✕</button></div>`).join("")}
+      <td class="td text-xs">${(p.si_files || []).map((n) => `<div class="si-file" title="${esc(n)}"><span>${esc(n)}</span>
+        <button data-sidelete="${esc(n)}" class="btn-ghost btn-sm btn-remove" title="Delete this file from original paper/SI" aria-label="Delete this file">&times;</button></div>`).join("")}
         ${siUploadControl(p.key, p.si ? "Add another SI" : "Upload SI")}</td>
       <td class="td">${p.typo_pdf_doi ? badge("DOI typo in file names", "unit_mismatch") : ""} ${p.duplicates.length ? badge("duplicate PDF", "queued") : ""}</td>
     </tr>`).join("")}</tbody></table>`;
@@ -277,8 +277,8 @@ function renderSi() {
     return;
   }
   const links = [...si.agentLinks, ...si.links.filter((u) => !si.agentLinks.includes(u))];
-  const files = si.files.map((f) => `<div style="display:flex;gap:.5rem;align-items:center">✔ <span class="font-mono text-xs">${esc(f.name)}</span>
-      <span class="text-xs text-slate-400">${Math.round(f.size / 1024).toLocaleString()} KB</span><button data-sidel-ex="${esc(f.name)}" class="text-rose-600" title="remove this file">✕</button></div>`).join("");
+  const files = si.files.map((f) => `<div class="si-file" title="${esc(f.name)}"><span>${esc(f.name)}</span>
+      <span class="text-slate-400">${Math.round(f.size / 1024).toLocaleString()} KB</span><button data-sidel-ex="${esc(f.name)}" class="btn-ghost btn-sm btn-remove" title="Delete this file from original paper/SI" aria-label="Delete this file">&times;</button></div>`).join("");
   const busy = state.siJob ? "disabled" : "", srv = state.agentServer, open = si.status !== "have";
   const agentBtn = open
     ? `<button id="si-agent-run" class="btn-ghost" ${busy}>${state.siJob === "running" ? "The model is reading…" : "Read the paper for its SI (model)"}</button>` : "";
@@ -546,7 +546,7 @@ function renderJob(job) {
         </div>
         <div class="flex flex-wrap items-center gap-2">
           ${badge(job.status)}<span id="job-cost" class="text-sm tabular-nums">$${Number(job.cost_usd).toFixed(4)}</span>
-          ${hasTable ? `<a class="btn-ghost" target="_blank" rel="noopener" href="/table/${encodeURIComponent(job.id)}">Check tables ↗</a>` : ""}
+          ${hasTable ? `<a class="btn-ghost" target="_blank" rel="noopener" href="/table/${encodeURIComponent(job.id)}">Check tables</a>` : ""}
           ${running ? `<button id="job-cancel" class="btn-danger" ${job.cancel_requested ? "disabled" : ""}>Cancel</button>`
                     : `<button id="job-trace" class="btn-ghost">Trace digest</button>${job.kind !== "learn" ? `<button id="job-learn" class="btn-ghost">Learn from this run</button>` : ""}`}
         </div>
@@ -600,7 +600,7 @@ async function loadResults(job) {
 const sample = (device) => `<span title="${esc(device)}">${esc(String(device ?? "").replace(/^.*_(Sample\s*\d+)$/i, "$1"))}</span>`;
 // opens the paper (or its SI) at the cited page, on its own page beside this row, to check what was extracted
 const sourceLink = (r) => (state.jobId && r.page ? `<a class="text-indigo-700 hover:underline" target="_blank" rel="noopener"
-  href="/review/${encodeURIComponent(state.jobId)}?row=${encodeURIComponent(r.row_id)}">open in the paper ↗</a>` : "");
+  href="/review/${encodeURIComponent(state.jobId)}?row=${encodeURIComponent(r.row_id)}">open in the paper</a>` : "");
 const where = (r) => `${r.page ? `p${esc(r.page)} ` : ""}${r.source ? `[${esc(r.source)}] ` : ""}${esc(r.evidence)}`;
 
 function parseValues(raw) {
@@ -648,7 +648,7 @@ function rowAttentionClass(r) {
 // with the rows it could settle. Clicking an entry shows only those rows.
 // a file picker that sends the chosen PDF to /api/si for this paper
 function siUploadControl(key, label) {
-  return `<label class="btn-ghost cursor-pointer" style="display:inline-block;padding:.15rem .5rem;font-size:.75rem">${esc(label)}
+  return `<label class="btn-ghost btn-sm cursor-pointer">${esc(label)}
     <input type="file" accept="application/pdf,.pdf" data-siupload="${esc(key)}" style="display:none"></label>`;
 }
 
@@ -691,7 +691,7 @@ function siPanel(rows) {
       <code>original paper/SI/</code>, then run again.</p>
     ${groups.map((g) => `<div class="space-y-1 rounded-md bg-white p-2">
       <a style="display:inline-block;padding:.25rem .6rem;border-radius:.375rem;background:#0369a1;color:#fff;font-weight:600;text-decoration:none"
-         href="${esc(g.link)}" target="_blank" rel="noopener noreferrer">Open the SI page ↗</a>
+         href="${esc(g.link)}" target="_blank" rel="noopener noreferrer">Open the SI page</a>
       <div class="break-all"><a style="color:#0369a1;text-decoration:underline" href="${esc(g.link)}" target="_blank" rel="noopener noreferrer">${esc(g.link)}</a></div>
       <div>Save as: <code>${esc(g.saveAs)}</code></div>
       <div>${siUploadControl(g.saveAs.replace(/_SI\d*\.pdf$/i, ""), "Upload the file here")}</div>
@@ -734,18 +734,12 @@ function renderRows(rows, view) {
   $("#job-results").innerHTML = `<div class="card space-y-3">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <h3 class="card-title mb-0">${esc(v.title)}</h3>
-      <div class="flex flex-wrap items-center gap-2">
-        ${view === "review" ? `<div class="view-switch" role="group" aria-label="Table layout">
-          <button type="button" data-rowmode="sheets" class="on">Sheet tables</button>
-          <button type="button" data-rowmode="flat">All rows</button>
-        </div>` : ""}
-        <a class="btn-ghost" target="_blank" rel="noopener" href="/table/${encodeURIComponent(state.jobId)}">Open full check table ↗</a>
-      </div>
+      <a class="btn-ghost" target="_blank" rel="noopener" href="/table/${encodeURIComponent(state.jobId)}">Open full check table</a>
     </div>
+    ${view === "review" ? `<div id="rows-sheets" class="sheet-tabs"></div>` : ""}
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-wrap items-center gap-2">
         ${v.order.filter((s) => counts[s] || (v.key === "decision" && (s === "verify_more" || s === "human_read"))).map((s) => `<button type="button" class="filter-pill" data-filter="${esc(s)}">${badge(`${s || "none"} ${counts[s] || 0}`, s)}</button>`).join("")}
-        <button type="button" data-filter="" class="btn-ghost btn-pill chip-active">all ${rows.length}</button>
         ${devices.length > 1 ? `<select id="rows-device" class="input" style="width:auto;padding:.3rem .65rem;font-size:.75rem">
           <option value="">All devices (${devices.length})</option>
           ${devices.map((d) => `<option value="${esc(d)}">${esc(String(d).replace(/^.*_(Sample\s*\d+)$/i, "$1"))} (${esc(d)})</option>`).join("")}
@@ -753,7 +747,6 @@ function renderRows(rows, view) {
       </div>
       <input id="rows-search" class="input" style="width:16rem;max-width:100%" placeholder="Search rows">
     </div>
-    ${view === "review" ? `<div id="rows-sheets" class="sheet-tabs"></div>` : ""}
     <div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">
       <div id="rows-table" style="flex:1 1 36rem;min-width:0;max-height:72vh" class="overflow-auto rounded-lg border border-slate-200"></div>
       <div id="rows-si" style="flex:0 0 17rem;display:none"></div></div></div>`;
@@ -763,7 +756,7 @@ function renderRows(rows, view) {
 function drawSheetTabs(rowsAfterBasicFilter) {
   const el = $("#rows-sheets");
   if (!el) return;
-  if (state.view !== "review" || state.rowMode !== "sheets") { el.innerHTML = ""; return; }
+  if (state.view !== "review") return;
   const sheets = orderedSheets(rowsAfterBasicFilter);
   const counts = {}, attn = {};
   for (const r of rowsAfterBasicFilter) {
@@ -771,8 +764,8 @@ function drawSheetTabs(rowsAfterBasicFilter) {
     counts[s] = (counts[s] || 0) + 1;
     if (["revise", "verify_more", "human_read"].includes(r.decision)) attn[s] = (attn[s] || 0) + 1;
   }
-  el.innerHTML = sheets.map((s) => `<button type="button" data-sheetfilter="${esc(s)}" class="sheet-tab ${state.sheetFilter === s ? "on" : ""}">${esc(s)} (${counts[s] || 0})${attn[s] ? `<span class="badge bg-amber-100 text-amber-800">${attn[s]} check</span>` : ""}</button>`).join("")
-    + (sheets.length > 1 ? `<button type="button" data-sheetfilter="" class="sheet-tab ${!state.sheetFilter ? "on" : ""}">All sheets (${rowsAfterBasicFilter.length})</button>` : "");
+  el.innerHTML = sheets.map((s) => `<button type="button" data-sheetfilter="${esc(s)}" class="sheet-tab ${state.rowMode === "sheets" && state.sheetFilter === s ? "on" : ""}">${esc(s)} (${counts[s] || 0})${attn[s] ? `<span class="badge bg-amber-100 text-amber-800">${attn[s]} check</span>` : ""}</button>`).join("")
+    + `<button type="button" data-rowmode="flat" class="sheet-tab ${state.rowMode === "flat" ? "on" : ""}" title="Every row in one list">All rows (${rowsAfterBasicFilter.length})</button>`;
 }
 
 function renderSheetTables(rows) {
@@ -835,7 +828,6 @@ function drawRows() {
   siEl.innerHTML = siHtml;
   siEl.style.display = siHtml ? "block" : "none";
   $$("#job-results [data-filter]").forEach((b) => b.classList.toggle("chip-active", b.dataset.filter === state.filter));
-  $$("#job-results [data-rowmode]").forEach((b) => b.classList.toggle("on", b.dataset.rowmode === state.rowMode));
   if (state.view === "review" && state.rowMode === "sheets") {
     $("#rows-table").innerHTML = renderSheetTables(baseRows);
     return;
@@ -878,11 +870,12 @@ function wire() {
     const mode = e.target.closest("[data-rowmode]");
     if (mode) { state.rowMode = mode.dataset.rowmode; drawRows(); return; }
     const sheetTab = e.target.closest("[data-sheetfilter]");
-    if (sheetTab) { state.sheetFilter = sheetTab.dataset.sheetfilter; drawRows(); return; }
+    if (sheetTab) { state.rowMode = "sheets"; state.sheetFilter = sheetTab.dataset.sheetfilter; drawRows(); return; }
     const filter = e.target.closest("[data-filter]");
-    if (filter) { state.filter = filter.dataset.filter; drawRows(); return; }
+    if (filter) { state.filter = state.filter === filter.dataset.filter ? "" : filter.dataset.filter; drawRows(); return; }
     const dex = e.target.closest("[data-sidel-ex]");
     if (dex) {
+      if (!confirm(`Delete ${dex.dataset.sidelEx}?`)) return;
       guard(async () => {
         await api(`/api/si/${encodeURIComponent(dex.dataset.sidelEx)}`, { method: "DELETE" });
         toast(`Removed ${dex.dataset.sidelEx}`);
@@ -892,6 +885,7 @@ function wire() {
     }
     const del = e.target.closest("[data-sidelete]");
     if (del) {
+      if (!confirm(`Delete ${del.dataset.sidelete}?`)) return;
       guard(async () => {
         await api(`/api/si/${encodeURIComponent(del.dataset.sidelete)}`, { method: "DELETE" });
         toast(`Removed ${del.dataset.sidelete}`);

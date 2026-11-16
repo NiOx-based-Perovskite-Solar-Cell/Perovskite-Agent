@@ -139,7 +139,7 @@ function drawTables() {
       <div class="sheet-head"><h2>Findings</h2><span class="mute">${rows.length} cells</span></div>
       <div class="sheet-scroll"><table>
         <thead><tr>
-          <th class="col-chk">✓</th><th>Status</th><th>Device</th><th>Sheet · Row</th><th>Column</th><th>Keys</th>
+          <th class="col-chk" title="Checked"></th><th>Status</th><th>Device</th><th>Sheet · Row</th><th>Column</th><th>Keys</th>
           <th>Recorded (Excel)</th><th>Paper (Agent)</th><th>Auditor</th><th>Detail · Evidence</th><th class="col-act">Verify</th>
         </tr></thead>
         <tbody>${rows.map((r) => `<tr class="${attnClass(r)} ${st.sel === r.row_id ? "is-sel" : ""} ${st.checked.has(r.row_id) ? "is-checked" : ""}" data-row="${esc(r.row_id)}">
@@ -155,7 +155,7 @@ function drawTables() {
           <td>${esc(r.detail)}<div class="ev-quote mute">${r.page ? `p${esc(r.page)} ` : ""}${esc(r.evidence)}</div></td>
           <td class="col-act">
             ${r.page ? `<button type="button" class="btn" data-pdf="${esc(r.row_id)}">PDF p${esc(r.page)}</button>` : `<span class="empty-cell">no page</span>`}
-            <a class="btn" href="/review/${encodeURIComponent(JOB)}?row=${encodeURIComponent(r.row_id)}" target="_blank" rel="noopener" title="Open side-by-side review">↗</a>
+            <a class="btn" href="/review/${encodeURIComponent(JOB)}?row=${encodeURIComponent(r.row_id)}" target="_blank" rel="noopener" title="Open side-by-side review">Open</a>
           </td>
         </tr>`).join("")}</tbody>
       </table></div>
@@ -178,7 +178,7 @@ function drawTables() {
       <div class="sheet-head"><h2>${esc(sheet)}</h2><span class="mute">${sRows.length} rows · ${cols.length} columns</span></div>
       <div class="sheet-scroll"><table>
         <thead><tr>
-          <th class="col-chk">✓</th><th>Decision</th><th>Device</th>
+          <th class="col-chk" title="Checked"></th><th>Decision</th><th>Device</th>
           ${cols.map((c) => `<th>${esc(c)}</th>`).join("")}
           <th>Source & Evidence</th><th>Reason / Note</th><th class="col-act">Verify</th>
         </tr></thead>
@@ -199,7 +199,7 @@ function drawTables() {
             <td style="min-width:10rem">${esc(r.reason)}${r.note ? `<div class="mute">Note: ${esc(r.note)}</div>` : ""}</td>
             <td class="col-act">
               ${r.page ? `<button type="button" class="btn" data-pdf="${esc(r.row_id)}">PDF p${esc(r.page)}</button>` : `<span class="empty-cell">no page</span>`}
-              <a class="btn" href="/review/${encodeURIComponent(JOB)}?row=${encodeURIComponent(r.row_id)}" target="_blank" rel="noopener" title="Open side-by-side review">↗</a>
+              <a class="btn" href="/review/${encodeURIComponent(JOB)}?row=${encodeURIComponent(r.row_id)}" target="_blank" rel="noopener" title="Open side-by-side review">Open</a>
             </td>
           </tr>`;
         }).join("")}</tbody>
@@ -222,7 +222,7 @@ function drawPage(v, rects = [], how = "") {
   $("#d-pagebox").hidden = false;
   const q = v.paper ? `?paper=${encodeURIComponent(v.paper)}` : "";
   const base = `/api/jobs/${encodeURIComponent(JOB)}/source/${v.source}`;
-  $("#d-where").innerHTML = `<strong>${v.is_si ? "SI" : "Paper"} · p${v.page}</strong> <span class="mute">${esc(v.file)}</span> · <a href="${base}${q}#page=${v.page}" target="_blank" rel="noopener">open PDF ↗</a>`;
+  $("#d-where").innerHTML = `<strong>${v.is_si ? "SI" : "Paper"} · p${v.page}</strong> <span class="mute">${esc(v.file)}</span> · <a href="${base}${q}#page=${v.page}" target="_blank" rel="noopener">open PDF</a>`;
   const place = () => {
     const w = st.size.width, h = st.size.height;
     rects.forEach(([x0, y0, x1, y1]) => {
@@ -254,7 +254,7 @@ async function openPdf(rowId) {
   $("#drawer").hidden = false;
   document.querySelectorAll("#tables-pane tr[data-row]").forEach((tr) => tr.classList.toggle("is-sel", tr.dataset.row === rowId));
   $("#d-title").textContent = `${sample(r.device)} · ${r.sheet || ""}`;
-  $("#d-mark-next").textContent = st.checked.has(rowId) ? "✓ Checked" : "✓ Mark checked";
+  $("#d-mark-next").textContent = st.checked.has(rowId) ? "Checked" : "Mark checked";
   const obj = parseValues(r.values);
   const kvHtml = obj
     ? `<table id="d-kv"><tbody>${Object.entries(obj).map(([k, v]) => `<tr><th style="width:40%">${esc(k)}</th><td>${v !== null && v !== "" ? esc(v) : "–"}</td></tr>`).join("")}</tbody></table>`
@@ -269,7 +269,7 @@ async function openPdf(rowId) {
     <div id="d-pager">
       <button type="button" class="btn" id="d-prev">‹ Page</button>
       <button type="button" class="btn" id="d-next">Page ›</button>
-      <span class="mute">← → turn pages · Esc close</span>
+      <span class="mute">Left/Right keys turn pages · Esc close</span>
     </div>`;
   $("#d-prev").onclick = () => turn(-1);
   $("#d-next").onclick = () => turn(1);
@@ -347,13 +347,13 @@ async function init() {
     if (!st.sel) return;
     const next = !st.checked.has(st.sel);
     setRowChecked(st.sel, next);
-    $("#d-mark-next").textContent = next ? "✓ Checked" : "✓ Mark checked";
+    $("#d-mark-next").textContent = next ? "Checked" : "Mark checked";
   });
   $("#tables-pane").addEventListener("change", (e) => {
     const chk = e.target.closest("[data-chk]");
     if (!chk) return;
     setRowChecked(chk.dataset.chk, chk.checked);
-    if (st.sel === chk.dataset.chk) $("#d-mark-next").textContent = chk.checked ? "✓ Checked" : "✓ Mark checked";
+    if (st.sel === chk.dataset.chk) $("#d-mark-next").textContent = chk.checked ? "Checked" : "Mark checked";
   });
   $("#tables-pane").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-pdf]");

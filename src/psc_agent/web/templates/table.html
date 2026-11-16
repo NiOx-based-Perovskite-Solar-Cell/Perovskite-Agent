@@ -26,7 +26,7 @@
     header h1 { font-size:1rem; margin:0; font-weight:700; }
     .mute { color:var(--mute); font-size:.78rem; }
     .head-actions { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
-    .btn { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:.45rem; padding:.28rem .65rem; font-size:.76rem; font-weight:500; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:.3rem; outline:none; }
+    .btn { border:1px solid var(--line); background:var(--card); color:var(--ink); text-decoration:none; cursor:pointer; display:inline-flex; align-items:center; gap:.3rem; outline:none; }
     .btn:hover { border-color:var(--mute); }
     .btn:focus, .btn:focus-visible { outline:none; }
     .btn-primary { background:var(--pill-on-bg); color:var(--pill-on-ink); border-color:var(--pill-on-line); }
@@ -34,9 +34,11 @@
     #toolbar { padding:.55rem 1.1rem; border-bottom:1px solid var(--line); background:var(--card); display:flex; flex-direction:column; gap:.45rem; }
     .bar-row { display:flex; flex-wrap:wrap; gap:.45rem; align-items:center; justify-content:space-between; }
     .bar-group { display:flex; flex-wrap:wrap; gap:.35rem; align-items:center; }
-    input[type="search"], select { padding:.3rem .55rem; border:1px solid var(--line); border-radius:.45rem; background:var(--bg); color:var(--ink); font-size:.78rem; outline:none; }
+    input[type="search"], select { border:1px solid var(--line); background:var(--bg); color:var(--ink); outline:none; }
     input[type="search"] { width:min(22rem, 100%); }
-    button.chip, button.stab { border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:9999px; padding:.24rem .72rem; font-size:.75rem; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:.35rem; outline:none; }
+    button.chip, button.stab { border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer; display:inline-flex; align-items:center; gap:.35rem; outline:none; }
+    /* one control template: every button, tab, chip, select and search box shares size, radius and type */
+    .btn, button.chip, button.stab, input[type="search"], select { height:2rem; padding:0 .75rem; border-radius:.5rem; font:500 .76rem/1 system-ui, -apple-system, sans-serif; }
     button.chip:hover, button.stab:hover { border-color:var(--mute); }
     button.chip:focus, button.chip:focus-visible, button.stab:focus, button.stab:focus-visible { outline:none; }
     button.chip.on, button.stab.on { border-color:var(--pill-on-line); background:var(--pill-on-bg); color:var(--pill-on-ink); font-weight:600; }
@@ -105,8 +107,8 @@
     <div class="head-actions">
       <button type="button" class="btn" id="clear-checks">Clear checks</button>
       <a class="btn" id="csv-link" href="/api/jobs/{{ job_id }}/files/review.csv?download=1">Download CSV</a>
-      <a class="btn" href="/review/{{ job_id }}" target="_blank" rel="noopener">Side-by-side PDF review ↗</a>
-      <a class="btn" href="/#jobs/{{ job_id }}">← Back to Jobs</a>
+      <a class="btn" href="/review/{{ job_id }}" target="_blank" rel="noopener">Side-by-side PDF review</a>
+      <a class="btn" href="/#jobs/{{ job_id }}">Back to Jobs</a>
     </div>
   </header>
 
@@ -130,8 +132,8 @@
       <div id="d-top">
         <strong style="font-size:.85rem" id="d-title">Evidence in paper</strong>
         <div class="bar-group">
-          <button type="button" class="btn btn-primary" id="d-mark-next">✓ Mark checked</button>
-          <button type="button" class="btn" id="d-close" title="Close (Esc)">✕</button>
+          <button type="button" class="btn btn-primary" id="d-mark-next">Mark checked</button>
+          <button type="button" class="btn" id="d-close" title="Close (Esc)">Close</button>
         </div>
       </div>
       <div id="d-facts"></div>
