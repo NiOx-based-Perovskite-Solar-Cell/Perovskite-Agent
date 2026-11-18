@@ -61,6 +61,21 @@ python -m psc_agent agent-server --pdf "original paper"   # http://127.0.0.1:510
 
 Set `AGENT_SERVER_TOKEN` in `.env` (and `AGENT_SERVER_URL=http://127.0.0.1:5100` if running the web app outside Docker).
 
+## Deploy on a VPS (for testers)
+
+The web app sits behind Caddy (login, HTTPS with a domain). The agent server runs on the VPS with a real Chrome on a
+virtual screen that you see in the browser at `/browser/` (noVNC). Google Chrome needs an amd64 VPS.
+
+1. In `.env`: `BASIC_USER`, `BASIC_HASH` (`docker run --rm caddy caddy hash-password`, in single quotes),
+   `AGENT_SERVER_TOKEN`, and optionally `SITE_ADDRESS` (your domain) and `BROWSER_USER`/`BROWSER_HASH`.
+2. `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build`
+3. Sign in to the publishers once (the profile is kept in the `chrome-profile` volume): open `/browser/vnc.html`, then
+   `docker compose -f docker-compose.yml -f docker-compose.prod.yml exec agent python -m psc_agent browser login --chrome-profile /profile --url <your library login page>`,
+   sign in in the noVNC window, and press Enter in the terminal.
+4. Open ports 80 and 443 in the VPS firewall. Do not open 5000, 5100 or 6080.
+
+When a download meets a bot check, the job log links to `/browser/`: solve it there within 5 minutes.
+
 ## Project Layout
 
 ```text

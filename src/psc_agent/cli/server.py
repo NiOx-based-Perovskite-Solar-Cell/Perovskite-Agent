@@ -27,7 +27,7 @@ def cmd_serve(args) -> int:
     from ..web.agent_server import AgentServer
 
     url, token = os.environ.get("AGENT_SERVER_URL"), os.environ.get("AGENT_SERVER_TOKEN")
-    agent = AgentServer(url, token) if url and token else None
+    agent = AgentServer(url, token, window=os.environ.get("AGENT_BROWSER_URL")) if url and token else None
     cfg = WebConfig(root=Path(args.root), skills_dir=args.skills, runs_dir=args.runs, max_workers=args.workers, agent_server=agent,
                     provider=args.provider or os.environ.get("PSC_PROVIDER") or "openrouter")
     app = create_app(cfg)

@@ -286,7 +286,9 @@ function renderSi() {
   const chromeBtn = open && srv && srv.reachable
     ? `<button id="si-chrome-run" class="btn-ghost" ${busy}>${state.siJob === "chrome" ? "Chrome is downloading…" : "Download the SI with my Chrome"}</button>` : "";
   const chromeNote = open && srv && srv.reachable
-    ? `<div class="text-xs text-slate-500">A Chrome window opens on your computer: sign in or pass a check there if asked. The file is saved for this paper.</div>`
+    ? `<div class="text-xs text-slate-500">${srv.window
+        ? `Chrome runs on the server: <a style="color:#0369a1;text-decoration:underline" href="${esc(srv.window)}" target="_blank" rel="noopener noreferrer">open its window</a> to sign in or pass a check if asked.`
+        : "A Chrome window opens on your computer: sign in or pass a check there if asked."} The file is saved for this paper.</div>`
     : open && srv && srv.configured ? `<div class="text-xs text-slate-500">Agent server not reachable: ${esc(srv.error || "")}</div>` : "";
   box.innerHTML = `<div class="space-y-3">
     <div>${badge(si.status === "have" ? "SI loaded" : si.status.replace("_", " "), si.status === "have" ? "done" : si.status === "not_referenced" ? "queued" : "review")}

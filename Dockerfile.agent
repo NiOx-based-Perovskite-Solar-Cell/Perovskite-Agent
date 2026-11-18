@@ -1,0 +1,19 @@
+# The agent server on a VPS: a real (headed) Google Chrome on a virtual screen, shown on a web page through noVNC so a
+# person can sign in once and pass bot checks. Used by docker-compose.prod.yml. Google Chrome is amd64 only.
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1 DISPLAY=:99
+WORKDIR /app
+COPY pyproject.toml README.md ./
+COPY src ./src
+RUN pip install ".[web,browser]" \
+ && playwright install --with-deps chrome \
+ && apt-get update && apt-get install -y --no-install-recommends xvfb x11vnc fluxbox novnc websockify fonts-noto-cjk \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --uid 1000 psc && mkdir -p /data /profile && chown psc /data /profile
+COPY --chmod=755 docker/agent-entrypoint.sh /usr/local/bin/agent-entrypoint
+USER psc
+WORKDIR /data
+EXPOSE 5100 6080
+ENTRYPOINT ["agent-entrypoint"]

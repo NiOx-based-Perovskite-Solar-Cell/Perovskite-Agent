@@ -131,7 +131,7 @@ def agent_server_status():
     if srv is None:
         return jsonify(configured=False)
     try:
-        return jsonify(configured=True, reachable=True, url=srv.url, chrome=bool(srv.health().get("chrome")))
+        return jsonify(configured=True, reachable=True, url=srv.url, chrome=bool(srv.health().get("chrome")), window=srv.window)
     except AgentServerError as e:
         return jsonify(configured=True, reachable=False, url=srv.url, error=str(e))
 

@@ -1,0 +1,21 @@
+# Public front door for testers: login + (with a domain) automatic HTTPS. The app itself has no login.
+{$SITE_ADDRESS::80} {
+	# the SI agent's Chrome (noVNC): signed in as you, so it has its own login
+	handle_path /browser/* {
+		basic_auth {
+			{$BROWSER_USER} {$BROWSER_HASH}
+		}
+		reverse_proxy agent:6080
+	}
+	handle {
+		basic_auth {
+			{$BASIC_USER} {$BASIC_HASH}
+		}
+		reverse_proxy psc:5000 {
+			# model runs are long; do not cut the connection
+			transport http {
+				response_header_timeout 10m
+			}
+		}
+	}
+}

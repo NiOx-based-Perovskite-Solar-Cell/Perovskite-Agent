@@ -69,7 +69,8 @@ def run_si_download(cfg, job: Job) -> dict:
     p = job.params
     path = Path(p["pdf_path"])
     key = intake_key(load_paper(path), path)
-    job.add_log("asking the agent server to download the SI with your Chrome: a window opens on your computer; sign in or pass a check there if asked")
+    where = f"open {cfg.agent_server.window}" if cfg.agent_server.window else "a window opens on your computer"
+    job.add_log(f"asking the agent server to download the SI with your Chrome: {where}; sign in or pass a check there if asked")
     res = cfg.agent_server.download_si(path, key, p.get("si_finder_model"))
     job.add_log(f"{res['status']}: {len(res['files'])} file(s) saved. {res['notes'][:300]}")
     return res

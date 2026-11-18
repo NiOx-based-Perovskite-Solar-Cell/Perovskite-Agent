@@ -98,8 +98,9 @@ def create_agent_app(pdf_dir, token: str, *, model: str = finder_model("openrout
 class AgentServer:
     """The web app's side: where the agent server is and how to ask it."""
 
-    def __init__(self, url: str, token: str, *, transport=None):
-        self.url, self.token, self._transport = url.rstrip("/"), token, transport
+    def __init__(self, url: str, token: str, *, window: str | None = None, transport=None):
+        """``window``: a web page that shows the agent's Chrome (noVNC, when the server runs on a VPS); None = its own screen."""
+        self.url, self.token, self.window, self._transport = url.rstrip("/"), token, window, transport
 
     def _request(self, method: str, path: str, *, timeout: float, **kwargs) -> dict:
         try:
