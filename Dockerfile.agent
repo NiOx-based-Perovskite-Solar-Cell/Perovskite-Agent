@@ -6,10 +6,12 @@ ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_
 WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY src ./src
+# Chrome from Google's .deb (apt pulls its libraries); Playwright drives it by path, so it downloads no browser.
 RUN pip install ".[web,browser]" \
- && playwright install --with-deps chrome \
- && apt-get update && apt-get install -y --no-install-recommends xvfb x11vnc fluxbox novnc websockify fonts-noto-cjk \
- && rm -rf /var/lib/apt/lists/*
+ && apt-get update && apt-get install -y --no-install-recommends wget ca-certificates xvfb x11vnc fluxbox novnc websockify \
+ && wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+ && apt-get install -y --no-install-recommends ./google-chrome-stable_current_amd64.deb \
+ && rm google-chrome-stable_current_amd64.deb && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home --uid 1000 psc && mkdir -p /data /profile && chown psc /data /profile
 COPY --chmod=755 docker/agent-entrypoint.sh /usr/local/bin/agent-entrypoint
