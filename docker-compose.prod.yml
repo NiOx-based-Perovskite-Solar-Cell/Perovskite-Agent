@@ -1,32 +1,23 @@
-# Deploy on a VPS (no dev reload, no debugger, Caddy reverse proxy in front, the SI agent's Chrome on the server):
+# Deploy on a VPS (no dev reload, no debugger, the SI agent's Chrome on the server):
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 # Naming both files stops docker-compose.override.yml (dev mode) from loading.
-# Needs in .env: AGENT_SERVER_TOKEN; optional SITE_ADDRESS (see .env.example).
+# Needs in .env: AGENT_SERVER_TOKEN (see .env.example).
+# Put your host reverse proxy (Nginx/Caddy) in front of 127.0.0.1:5000 (app) and 127.0.0.1:6080 (/browser/* noVNC).
 services:
-  caddy:
-    image: caddy:2
-    restart: unless-stopped
-    ports: ["80:80", "443:443"]
-    environment:
-      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
-    volumes:
-      - "./Caddyfile:/etc/caddy/Caddyfile:ro"
-      - "caddy-data:/data"
-    depends_on: [psc, agent]
   psc:
     restart: unless-stopped
     environment:
       AGENT_SERVER_URL: http://agent:5100
-      AGENT_BROWSER_URL: /browser/vnc.html?path=browser/websockify&autoconnect=1&resize=scale
+      AGENT_BROWSER_URL: ${AGENT_BROWSER_URL:-/browser/vnc.html?path=browser/websockify&autoconnect=1&resize=scale}
   agent:
     build: {context: ., dockerfile: Dockerfile.agent}
     image: psc-agent-chrome:1.0
     restart: unless-stopped
+    ports: ["127.0.0.1:6080:6080"]
     env_file: [.env]   # OPENROUTER_API_KEY and AGENT_SERVER_TOKEN
     shm_size: 1gb      # Chrome crashes with Docker's 64 MB /dev/shm
     volumes:
       - "./original paper:/data/original paper"   # SI is saved in SI/, where the web app reads it
       - "chrome-profile:/profile"                 # the sign-in survives restarts
 volumes:
-  caddy-data:
   chrome-profile:
