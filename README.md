@@ -63,16 +63,15 @@ Set `AGENT_SERVER_TOKEN` in `.env` (and `AGENT_SERVER_URL=http://127.0.0.1:5100`
 
 ## Deploy on a VPS
 
-The web app listens on `127.0.0.1:5000`, and the agent server runs on the VPS with a real Chrome on a
-virtual screen exposed via noVNC on `127.0.0.1:6080`. Put your existing reverse proxy (Nginx/Caddy) in front
-to route `/` to `127.0.0.1:5000` and `/browser/*` (stripping `/browser`) to `127.0.0.1:6080`. Google Chrome needs an amd64 VPS.
+The web app listens on port `5000`, and the agent server runs on the VPS with a real Chrome on a
+virtual screen exposed via noVNC on port `6080`. Google Chrome needs an amd64 VPS.
 
-1. In `.env`: set `AGENT_SERVER_TOKEN` (and your provider API key).
+1. In `.env`: set `AGENT_SERVER_TOKEN` (and your provider API key). Optionally set `AGENT_BROWSER_URL=http://<VPS_IP>:6080/vnc.html?autoconnect=1&resize=scale` if accessing without a reverse proxy.
 2. `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build`
-3. Sign in to the publishers once (the profile is kept in the `chrome-profile` volume): open `/browser/vnc.html` (or tunnel port 6080), then
+3. Sign in to the publishers once (the profile is kept in the `chrome-profile` volume): open `http://<VPS_IP>:6080/vnc.html?autoconnect=1&resize=scale`, then
    `docker compose -f docker-compose.yml -f docker-compose.prod.yml exec agent python -m psc_agent browser login --chrome-profile /profile --url <your library login page>`,
    sign in in the noVNC window, and press Enter in the terminal.
-4. Keep ports 5000, 5100 and 6080 closed to the public; expose only your reverse proxy (80/443).
+4. Allow ports `5000` and `6080` in your VPS firewall (or put a reverse proxy in front and close them). Keep `5100` closed to the public.
 
 When a download meets a bot check, the job log links to `/browser/`: solve it there within 5 minutes.
 

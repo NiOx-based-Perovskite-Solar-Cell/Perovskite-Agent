@@ -2,10 +2,10 @@
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 # Naming both files stops docker-compose.override.yml (dev mode) from loading.
 # Needs in .env: AGENT_SERVER_TOKEN (see .env.example).
-# Put your host reverse proxy (Nginx/Caddy) in front of 127.0.0.1:5000 (app) and 127.0.0.1:6080 (/browser/* noVNC).
 services:
   psc:
     restart: unless-stopped
+    ports: !override ["5000:5000"]
     environment:
       AGENT_SERVER_URL: http://agent:5100
       AGENT_BROWSER_URL: ${AGENT_BROWSER_URL:-/browser/vnc.html?path=browser/websockify&autoconnect=1&resize=scale}
@@ -13,7 +13,7 @@ services:
     build: {context: ., dockerfile: Dockerfile.agent}
     image: psc-agent-chrome:1.0
     restart: unless-stopped
-    ports: ["127.0.0.1:6080:6080"]
+    ports: ["6080:6080"]
     env_file: [.env]   # OPENROUTER_API_KEY and AGENT_SERVER_TOKEN
     shm_size: 1gb      # Chrome crashes with Docker's 64 MB /dev/shm
     volumes:

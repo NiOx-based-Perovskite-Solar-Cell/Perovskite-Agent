@@ -1,6 +1,6 @@
 #!/bin/sh
 # Virtual screen :99 -> VNC (this container only) -> noVNC web page on :6080, then the agent server on :5100.
-# :5100 stays on the compose network for the web app; :6080 (noVNC) is bound to 127.0.0.1 on the host in docker-compose.prod.yml.
+# :5100 stays on the compose network for the web app; :6080 (noVNC) is published in docker-compose.prod.yml.
 set -e
 rm -f /tmp/.X99-lock
 Xvfb :99 -screen 0 1440x900x24 -nolisten tcp &
