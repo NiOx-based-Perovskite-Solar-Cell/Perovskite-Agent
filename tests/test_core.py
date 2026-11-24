@@ -53,6 +53,9 @@ class QuoteCheck(unittest.TestCase):
         self.assertTrue(quote_on_page(self.PAGES, 1, "annealed at 300 °C for 60 min in air"))  # off by one page
         self.assertFalse(quote_on_page(self.PAGES, 2, "annealed at 450 °C for 30 min under nitrogen"))
         self.assertFalse(quote_on_page(self.PAGES, 9, "annealed at 300 °C for 60 min in air"))
+        self.assertTrue(quote_on_page(self.PAGES, 2, "The NiOx films were... for 60 min in air"))  # elided quote
+        self.assertTrue(quote_on_page(self.PAGES, 2, "The NiOx films were… then cooled"))
+        self.assertFalse(quote_on_page(self.PAGES, 2, "The NiOx films were... sintered under argon gas"))
         self.assertIsNone(quote_on_page(self.PAGES, 2, "Fig. 3b"))
         self.assertIsNone(quote_on_page(self.PAGES, 2, "300 °C"))  # too short to check
         self.assertIsNone(quote_on_page(self.PAGES, 2, "anything long enough to check", source="figure"))

@@ -42,6 +42,7 @@ class XDevice(BaseModel):
     sample: str
     paper_name: str | None = None
     description: str | None = None
+    in_si: bool = False  # the paper shows this device's results mainly in the supporting information
 
 
 class MapAnswer(BaseModel):
@@ -89,9 +90,9 @@ def _schema(name: str, sheets: list[str], with_devices: bool) -> dict:
     props = {"rows": {"type": "array", "items": row}}
     if with_devices:
         props["devices"] = {"type": "array", "items": {
-            "type": "object", "additionalProperties": False, "required": ["sample", "paper_name", "description"],
+            "type": "object", "additionalProperties": False, "required": ["sample", "paper_name", "description", "in_si"],
             "properties": {"sample": {"type": "string"}, "paper_name": {"type": ["string", "null"]},
-                           "description": {"type": ["string", "null"]}}}}
+                           "description": {"type": ["string", "null"]}, "in_si": {"type": "boolean"}}}}
     return {"name": name, "strict": True, "schema": {"type": "object", "additionalProperties": False,
                                                     "required": list(props), "properties": props}}
 
@@ -185,8 +186,10 @@ class Extractor:
                 "names it and a one-line description of what differs, plus its Layer rows. Layer rows use the lab's fixed "
                 "slots (workbook-schema): LayerID 1 Anode, 2 HTL, 3 HTL treatment, 4 PSK, 5 PSK treatment, 6 ETL, "
                 "7 ETL treatment, 8 Cathode. Give a row for each slot the device uses, never renumber, and leave the glass "
-                f"substrate out.\n{_columns_text(['Layer'])}\n"
-                "Return JSON: devices [{sample, paper_name, description}] and rows (sheet = Layer).")
+                "substrate out. in_si = true for a device whose results the paper shows mainly in the supporting information "
+                "(an extra comparison in SI figures or tables), false for the devices of the main text.\n"
+                f"{_columns_text(['Layer'])}\n"
+                "Return JSON: devices [{sample, paper_name, description, in_si}] and rows (sheet = Layer).")
         ans = self.rt.ask_json("mapper", [*parts, {"type": "text", "text": task}], MapAnswer,
                                schema=_schema("paper_map", ["Layer"], True), usage=result.usage)
         if not ans.devices:
@@ -244,13 +247,15 @@ class Extractor:
         with open(out / "review.csv", "w", newline="", encoding="utf-8-sig") as fh:
             w = csv.writer(fh)
             w.writerow(["row_id", "device", "sheet", "values", "page", "source", "evidence", "quote_ok", "decision",
-                        "p", "reason", "note", "si_link", "si_save_as"])
+                        "p", "reason", "note", "si_link", "si_save_as", "page_in_si", "device_in_si"])
+            si_devices = {d.sample for d in result.devices if d.in_si}
             for i, r in enumerate(result.rows):
                 rid = row_id(i, r)
                 v = result.verdicts.get(rid)
                 w.writerow([rid, r.device, r.sheet, json.dumps(r.cells(), ensure_ascii=False), r.page, r.source,
                             r.evidence, r.quote_ok, v.choice if v else "", v.p if v else "", v.reason if v else "",
-                            r.note, result.si_link, result.si_save_as])
+                            r.note, result.si_link, result.si_save_as,
+                            bool(paper.n_main is not None and r.page and r.page > paper.n_main), r.device in si_devices])
         (out / "extraction.json").write_text(result.model_dump_json(indent=2), encoding="utf-8")
 
 

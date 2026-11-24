@@ -74,14 +74,21 @@ def quote_on_page(pages: list[str], page: int | None, quote: str | None, source:
         return None
     if not page or not 1 <= page <= len(pages):
         return False
-    q = normalize_text(quote).strip("\"' .")
-    squashed = squash(quote)
+    # models shorten quotes with "..." (NFKC turns "…" into "..."): every piece must then be on the same page
+    parts = [p.strip("\"' .,;") for p in normalize_text(quote).split("...")]
+    parts = [p for p in parts if p] or [""]
     for i in (page, page - 1, page + 1):
         if 1 <= i <= len(pages):
             text = normalize_text(pages[i - 1])
-            if q in text or (len(squashed) >= 10 and squashed in squash(text)):
-                return True
-            m = SequenceMatcher(None, text, q, autojunk=False).find_longest_match(0, len(text), 0, len(q))
-            if m.size >= min_ratio * len(q):
+            if all(_on_text(text, p, min_ratio) for p in parts):
                 return True
     return False
+
+
+def _on_text(text: str, q: str, min_ratio: float) -> bool:
+    """``q`` (normalized) is in the normalized page ``text``: verbatim, letters-and-digits only, or as a near-copy."""
+    squashed = squash(q)
+    if q in text or (len(squashed) >= 10 and squashed in squash(text)):
+        return True
+    m = SequenceMatcher(None, text, q, autojunk=False).find_longest_match(0, len(text), 0, len(q))
+    return m.size >= min_ratio * len(q)

@@ -20,7 +20,9 @@ SI_TEXT = "Supporting Information. Table S1: PEAI was spin coated at 4000 rpm fo
 
 
 def mapper(body):
-    return {"devices": [{"sample": "S1", "paper_name": "control", "description": "d"}], "rows": []}
+    layer = {"device": "S1", "sheet": "Layer", "values": [{"column": "LayerID", "value": "3"}, {"column": "Material", "value": "PEAI"}],
+             "page": 3, "source": "table", "evidence": "Table S1"}  # the test papers have 2 pages: page 3 is the SI
+    return {"devices": [{"sample": "S1", "paper_name": "control", "description": "d", "in_si": True}], "rows": [layer]}
 
 
 class Flow(unittest.TestCase):
@@ -169,6 +171,9 @@ class Flow(unittest.TestCase):
         self.assertIn("(supporting information)", text)
         self.assertEqual(len([s for s in self.seen if s["role"] == "mapper"]), 1)  # the paper was read once
         self.assertTrue(any("1 file(s) read with the paper" in line for line in job.log))
+        with open(Path(job.out_dir) / "review.csv", encoding="utf-8-sig") as fh:
+            row = next(csv.DictReader(fh))
+        self.assertEqual((row["page_in_si"], row["device_in_si"]), ("True", "True"))  # the UI's "SI" tags
 
     def test_extract_without_an_si_still_works_and_says_so(self):
         job = self.extract("other.pdf")
