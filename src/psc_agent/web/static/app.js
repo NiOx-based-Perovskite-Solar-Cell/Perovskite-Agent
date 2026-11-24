@@ -281,10 +281,10 @@ function renderSi() {
       <span class="text-slate-400">${Math.round(f.size / 1024).toLocaleString()} KB</span><button data-sidel-ex="${esc(f.name)}" class="btn-ghost btn-sm btn-remove" title="Delete this file from original paper/SI" aria-label="Delete this file">&times;</button></div>`).join("");
   const busy = state.siJob ? "disabled" : "", srv = state.agentServer, open = si.status !== "have";
   const agentBtn = open
-    ? `<button id="si-agent-run" class="btn-ghost" ${busy}>${state.siJob === "running" ? "The model is reading…" : "Read the paper for its SI (model)"}</button>` : "";
+    ? `<button id="si-agent-run" class="btn-ghost btn-action" ${busy}>${state.siJob === "running" ? "The model is reading…" : "Look for the paper's SI from the journal website"}</button>` : "";
   // the agent server (outside Docker) drives your own Chrome, signed in as you: it can fetch what the web agent gets 403 for
   const chromeBtn = open && srv && srv.reachable
-    ? `<button id="si-chrome-run" class="btn-ghost" ${busy}>${state.siJob === "chrome" ? "Chrome is downloading…" : "Download the SI with my Chrome"}</button>` : "";
+    ? `<button id="si-chrome-run" class="btn-ghost btn-action" ${busy}>${state.siJob === "chrome" ? "Chrome is downloading…" : "Download the SI with my Chrome"}</button>` : "";
   const chromeNote = open && srv && srv.reachable
     ? `<div class="text-xs text-slate-500">${srv.window
         ? `Chrome runs on the server: <a style="color:#0369a1;text-decoration:underline" href="${esc(srv.window)}" target="_blank" rel="noopener noreferrer">open its window</a> to sign in or pass a check if asked.`
@@ -600,10 +600,13 @@ async function loadResults(job) {
 
 // one table component for recheck findings and extract review rows
 const sample = (device) => `<span title="${esc(device)}">${esc(String(device ?? "").replace(/^.*_(Sample\s*\d+)$/i, "$1"))}</span>`;
+// "SI" tag: the device is an SI-only comparison, or the row cites a page of the supporting information (review.csv flags)
+const siTag = (flag, what) => (flag === "True" ? ` <span class="badge bg-sky-100 text-sky-800" title="${what}">SI</span>` : "");
+const sampleCell = (r) => sample(r.device) + siTag(r.device_in_si, "device shown mainly in the supporting information");
 // opens the paper (or its SI) at the cited page, on its own page beside this row, to check what was extracted
 const sourceLink = (r) => (state.jobId && r.page ? `<a class="text-indigo-700 hover:underline" target="_blank" rel="noopener"
   href="/review/${encodeURIComponent(state.jobId)}?row=${encodeURIComponent(r.row_id)}">open in the paper</a>` : "");
-const where = (r) => `${r.page ? `p${esc(r.page)} ` : ""}${r.source ? `[${esc(r.source)}] ` : ""}${esc(r.evidence)}`;
+const where = (r) => `${r.page ? `p${esc(r.page)}${siTag(r.page_in_si, "page of the supporting information")} ` : ""}${r.source ? `[${esc(r.source)}] ` : ""}${esc(r.evidence)}`;
 
 function parseValues(raw) {
   if (raw && typeof raw === "object" && !Array.isArray(raw)) return raw;
@@ -650,8 +653,8 @@ function rowAttentionClass(r) {
 // with the rows it could settle. Clicking an entry shows only those rows.
 // a file picker that sends the chosen PDF to /api/si for this paper
 function siUploadControl(key, label) {
-  return `<label class="btn-ghost btn-sm cursor-pointer">${esc(label)}
-    <input type="file" accept="application/pdf,.pdf" data-siupload="${esc(key)}" style="display:none"></label>`;
+  return `<label class="btn-ghost btn-sm btn-upload">${esc(label)}
+    <input type="file" accept="application/pdf,.pdf" data-siupload="${esc(key)}" class="file-hidden"></label>`;
 }
 
 async function uploadSi(key, files) {
@@ -704,14 +707,14 @@ function siPanel(rows) {
 const ROW_VIEWS = {
   findings: { key: "status", order: FINDING_ORDER, title: "Findings (one row per checked cell)",
     head: ["Status", "Cell", "Field", "Recorded → paper", "Detail · evidence"],
-    cells: (r) => [badge(r.status), `${sample(r.device)}<div class="text-slate-400">${esc(r.sheet)} · row ${esc(r.excel_row)}</div>`,
+    cells: (r) => [badge(r.status), `${sampleCell(r)}<div class="text-slate-400">${esc(r.sheet)} · row ${esc(r.excel_row)}</div>`,
       `${esc(r.column)}<div class="text-slate-400">${esc(r.keys)}</div>`,
       `<span class="font-medium">${esc(r.recorded)} ${esc(r.recorded_unit)}</span> → <span class="font-medium">${esc(r.paper_value)} ${esc(r.paper_unit)}</span>`,
       `${esc(r.detail)}<div class="text-slate-400">${where(r)}</div>${sourceLink(r)}`] },
   review: { key: "decision", order: ["revise", "verify_more", "human_read", "accept", ""], title: "Extracted rows (review before moving into Raw Data)",
     head: ["Decision", "Row", "Values", "Evidence", "Reason"],
     cells: (r) => [`${badge(r.decision || "none")}<div class="text-slate-400">${r.p ? `p=${esc(Number(r.p).toFixed(2))}` : ""}</div>`,
-      `${sample(r.device)}<div class="text-slate-400">${esc(r.sheet)}</div>`, formatValues(r.values),
+      `${sampleCell(r)}<div class="text-slate-400">${esc(r.sheet)}</div>`, formatValues(r.values),
       `${where(r)}<div class="text-slate-400">quote on page: ${esc(r.quote_ok || "not checked")}</div>${sourceLink(r)}`, esc(r.reason)] },
 };
 
@@ -800,7 +803,7 @@ function renderSheetTables(rows) {
           const obj = parseValues(r.values) || {};
           return `<tr class="${rowAttentionClass(r)}">
             <td class="td text-xs" style="min-width:6.5rem">${badge(r.decision || "none")}${r.p ? `<div class="text-slate-400">p=${esc(Number(r.p).toFixed(2))}</div>` : ""}</td>
-            <td class="td text-xs font-medium" style="min-width:5rem">${sample(r.device)}</td>
+            <td class="td text-xs font-medium" style="min-width:5rem">${sampleCell(r)}</td>
             ${cols.map((c) => {
               const val = obj[c];
               return `<td class="td text-xs">${val !== undefined && val !== null && val !== "" ? esc(val) : `<span class="text-slate-300">–</span>`}</td>`;
@@ -904,7 +907,6 @@ function wire() {
       "recheck-none": () => { state.selected.clear(); renderRecheck(); },
       "recheck-run": () => runJob("recheck", { dois: [...state.selected], model: val("#recheck-model"), judge_model: val("#recheck-judge"),
         workers: num("#recheck-workers"), budget: num("#recheck-budget") }, $("#recheck-run")),
-      "extract-upload-btn": uploadPdfs,
       "si-agent-run": findSiLink,
       "si-chrome-run": downloadWithChrome,
       "extract-run": () => runJob("extract", { pdf: state.pdfChoice, model: val("#extract-model"), mapper_model: val("#extract-mapper"),
@@ -923,6 +925,8 @@ function wire() {
       updateRecheckButton();
     } else if (e.target.name === "pdf") {
       guard(() => selectPdf(e.target.value));
+    } else if (e.target.id === "extract-upload") {
+      guard(async () => { try { await uploadPdfs(); } finally { e.target.value = ""; } });
     } else if (e.target.id === "extract-only-new") renderExtract();
     else if (e.target.id === "prompt-role") guard(loadPrompt);
     else if (e.target.id === "rows-device") { state.deviceFilter = e.target.value; drawRows(); }

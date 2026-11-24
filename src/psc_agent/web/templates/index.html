@@ -28,6 +28,13 @@
     .btn-ghost.btn-sm { height: 1.5rem; padding: 0 0.5rem; font-size: 0.7rem; }
     .btn-ghost.btn-remove { width: 1.5rem; padding: 0; justify-content: center; font-size: 1rem; font-weight: 700; color: #dc2626; border-color: #fecaca; background: #fff; }
     .btn-ghost.btn-remove:hover { background: #fff1f2; border-color: #fda4af; }
+    /* buttons that do something (upload, search): tinted and raised so they read as buttons, not labels */
+    .btn-ghost.btn-action, .btn-ghost.btn-upload { position: relative; cursor: pointer; gap: 0.35rem; border-color: #93c5fd; background: #eff6ff; color: #1d4ed8; font-weight: 600; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12); }
+    .btn-ghost.btn-action:hover:not(:disabled), .btn-ghost.btn-upload:hover { background: #dbeafe; border-color: #60a5fa; }
+    .btn-ghost.btn-upload::before { content: "↑"; font-weight: 700; }
+    .btn-ghost.btn-upload:focus-within { outline: 2px solid #3b82f6; outline-offset: 2px; }
+    /* the file input inside an upload button: invisible but still reachable with Tab */
+    .file-hidden { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
     .si-file { display: flex; align-items: center; gap: 0.5rem; width: fit-content; max-width: 100%; margin-bottom: 0.3rem; padding: 0.15rem 0.2rem 0.15rem 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; background: #f8fafc; font-size: 0.72rem; }
     .si-file > span:first-child { font-family: ui-monospace, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .filter-pill { border: 0; background: transparent; padding: 0; border-radius: 0.5rem; cursor: pointer; outline: none; display: inline-flex; align-items: center; }
@@ -123,14 +130,14 @@
           </div>
           <div class="max-h-[30rem] overflow-auto rounded-lg border border-slate-200" id="extract-pdfs"></div>
           <div class="mt-4 flex flex-wrap items-center gap-3">
-            <input id="extract-upload" type="file" accept="application/pdf,.pdf" multiple class="text-sm">
-            <button id="extract-upload-btn" class="btn-ghost">Upload PDF</button>
+            <label class="btn-ghost btn-upload">Upload PDF
+              <input id="extract-upload" type="file" accept="application/pdf,.pdf" multiple class="file-hidden"></label>
           </div>
         </div>
         <div class="card space-y-3">
           <h2 class="card-title">2 · Supporting information (SI)</h2>
           <p class="text-sm text-slate-600">Recipes, suppliers and extra tables are often only in the SI. It is settled <b>before</b> the paper is read, so the extraction reads the paper
-            and its SI together, once. The first check reads the paper's text with rules and costs nothing; press "Read the paper for its SI (model)" to let a model read it
+            and its SI together, once. The first check reads the paper's text with rules and costs nothing; press "Look for the paper's SI from the journal website" to let a model read it
             instead (under a cent with Haiku), which also pulls out the SI address when the paper prints one.</p>
           <div id="extract-si" class="text-sm text-slate-500">Choose a paper first.</div>
           <div id="extract-si-agent" style="display:none;gap:.75rem;flex-wrap:wrap;align-items:end">
