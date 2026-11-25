@@ -225,7 +225,7 @@ class NativePdf(unittest.TestCase):
         rt = Runtime("gemini-3.5-flash-lite", client=client(handler), native_pdf=True)
         result = Extractor(rt, decide_rows=False).extract(pdf, tmp / "out")
         self.assertEqual((len(result.devices), result.errors), (1, []))
-        self.assertEqual(len(bodies), 4)  # the map and three sheet groups
+        self.assertEqual(len(bodies), 5)  # the map and four sheet groups
         for b in bodies:
             parts = b["contents"][0]["parts"]
             mimes = [p["inline_data"]["mime_type"] for p in parts if "inline_data" in p]

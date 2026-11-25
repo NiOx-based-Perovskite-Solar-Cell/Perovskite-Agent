@@ -71,8 +71,9 @@ def extractor(body):
                                                                 {"column": "Values", "value": v},
                                                                 {"column": "Unit", "value": "%"}]}
         return {"rows": [pce("S1", "20.1", "Table 1", "table"),
-                         pce("S2", "22.5", "the target device reached 23.9% efficiency in our lab", "text"),
-                         {"device": "S2", "sheet": "Stability", "page": 2, "source": "figure", "evidence": "Fig. 5a",
+                         pce("S2", "22.5", "the target device reached 23.9% efficiency in our lab", "text")]}
+    if 'SHEET "Stability"' in task:
+        return {"rows": [{"device": "S2", "sheet": "Stability", "page": 2, "source": "figure", "evidence": "Fig. 5a",
                           "note": "stability curve: normalized PCE vs time, S2", "values": [{"column": "Environment", "value": "Ambient air"},
                                                    {"column": "Retention (%)", "value": "85"}]}]}
     return {"rows": []}

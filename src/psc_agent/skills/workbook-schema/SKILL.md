@@ -40,9 +40,17 @@ Names the lab uses (use them when they fit, so that rows can be compared):
 - Properties: Champion PCE, Champion Voc, Champion Jsc, Champion FF; Average PCE, Average Voc, Average Jsc,
   Average FF (the mean in Values, the ± in Errors). When reverse and forward scans are reported separately add a
   suffix: Champion PCE (RS) for reverse, Champion PCE (FS) for forward. Other properties: VTFL, Trap Density, VBM,
-  CBM, Work Function, Fermi level, Contact Angle, Grain Size, RMS Roughness, Rs, Rrec, Rsh, HI (hysteresis index),
-  Jsc EQE, SPO PCE, Avg PL Lifetime, Hole mobility, Conductivity, Ideality factor, optical band gap.
-- Units: % (PCE, FF), V, mA cm-2, eV, nm, cm-3, deg, Ω, Ω cm2, ns, S cm-1, cm2 V-1 s-1.
+  CBM, Work Function, Fermi level, Contact Angle, Grain Size, RMS Roughness, Rs, Rrec, Rsh, Crec, HI (hysteresis
+  index), Jsc EQE, SPO PCE, Hole mobility, Conductivity, Ideality factor, Vbi, J0, optical band gap.
+  Decay fits, one row per parameter: TRPL t1, TRPL A1, TRPL t2, TRPL A2 (t3, A3 when fitted) and Avg PL Lifetime
+  for the average; transient photovoltage and photocurrent the same way with the prefix TPV or TPC (TPV t1 ...
+  TPV tavg). Valence band offset: the energy gap between the HTL's valence band and the perovskite's (eV, a
+  magnitude, usually 0.0-1.0 eV), found near the words "offset", "energy level offset", "ΔE_VB", "energy barrier" or
+  "mismatch"; the row of the device whose HTL it is (e.g. "NiOx (0.42 eV)" -> the NiOx device). Take it only when the
+  paper states the number; never subtract two VBMs yourself. The paper's name for anything else, kept short. This list
+  names values; it does not limit them.
+- Units: % (PCE, FF, A1, A2), V, mA cm-2, A cm-2 (J0), eV, nm, cm-3, deg, Ω, Ω cm2, F (Crec), ns, μs,
+  S cm-1, cm2 V-1 s-1.
 - Stability Environment: the storage or stress condition, one row each, e.g. "Ambient air", "N2", "Thermal Aging",
   "MPP tracking, 1 Sun, ambient air (ISOS-L-2)". Retention (%) is the percentage of the initial PCE left after
   Time (hr); T80 (hr) only when the paper states it.

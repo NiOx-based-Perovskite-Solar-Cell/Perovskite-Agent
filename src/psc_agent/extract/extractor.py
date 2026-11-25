@@ -30,7 +30,8 @@ from ..sources.si import si_hint
 from ..sources.workbook import STANDARD_HEADERS, Source, write_workbook
 
 log = logging.getLogger(__name__)
-GROUPS = (("Vender", "Materials"), ("Process",), ("Properties", "Stability"))
+# Properties gets a call of its own: it is the longest list per device, and sharing a call made the model stop early
+GROUPS = (("Vender", "Materials"), ("Process",), ("Properties",), ("Stability",))
 
 
 class XRow(EvidenceRow):

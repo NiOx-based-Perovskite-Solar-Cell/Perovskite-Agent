@@ -61,7 +61,7 @@ class WorkflowsReportSteps(unittest.TestCase):
         rt, _ = runtime({"mapper": lambda b: {"devices": [{"sample": "S1", "paper_name": "c", "description": "d"}], "rows": []},
                          "extract": lambda b: {"rows": []}}, hooks=[rec])
         Extractor(rt, decide_rows=False).extract(pdf, tmp / "out")
-        self.assertEqual(rec.steps, [(1, 5), (2, 5), (3, 5), (4, 5), (5, 5)])  # map, three sheet groups, verdicts
+        self.assertEqual(rec.steps, [(1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (6, 6)])  # map, four sheet groups, verdicts
 
     def test_recheck_ticks_per_sheet_group_and_the_judge(self):
         tmp = Path(tempfile.mkdtemp())
